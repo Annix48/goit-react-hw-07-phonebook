@@ -1,13 +1,26 @@
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
-import { deleteContact } from '../../redux/contactsSlice';
+import { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import * as contactsOperation from 'redux/contactsOperation';
+import { Spinner } from '../Spinner/Spinner';
 import style from './ContactItem.module.scss';
+import { isLoading } from 'redux/contactsSlice';
 
 const ContactItem = ({ id, name, number }) => {
   const dispatch = useDispatch();
+  const globalLoading = useSelector(isLoading);
+
+  const [localLoading, setLocalLoading] = useState(false);
+
+  useEffect(() => {
+    if (!globalLoading) {
+      setLocalLoading(false);
+    }
+  }, [globalLoading]);
 
   const handleDeleteContact = contactId => {
-    dispatch(deleteContact(contactId));
+    setLocalLoading(true);
+    dispatch(contactsOperation.deleteContact(contactId));
   };
 
   return (
@@ -18,8 +31,9 @@ const ContactItem = ({ id, name, number }) => {
         type="button"
         onClick={() => handleDeleteContact(id)}
         className={style.delete_btn}
+        disabled={localLoading}
       >
-        x
+        {!localLoading ? 'x' : <Spinner size={20} />}
       </button>
     </li>
   );
